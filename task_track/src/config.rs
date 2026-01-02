@@ -1,5 +1,5 @@
-use serde::Deserialize;
 use config::{Config, Environment};
+use serde::Deserialize;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct AppConfig {
@@ -14,8 +14,8 @@ impl AppConfig {
     pub fn from_env() -> anyhow::Result<Self> {
         dotenvy::dotenv().ok();
         let config = Config::builder()
-                    .add_source(Environment::default())
-                    .build()?;
+            .add_source(Environment::default())
+            .build()?;
         let cfg = config.try_deserialize()?;
         Ok(cfg)
     }

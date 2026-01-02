@@ -1,13 +1,13 @@
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use uuid::Uuid;
-use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum TaskStatus {
     ToDo,
     InProgress,
-    Done
+    Done,
 }
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]

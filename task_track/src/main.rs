@@ -1,10 +1,10 @@
+mod config;
 mod domain;
+mod errors;
 mod infra;
+mod middleware;
 mod routes;
 mod services;
-mod config;
-mod errors;
-mod middleware;
 
 fn main() {
     println!("Hello, world!");
