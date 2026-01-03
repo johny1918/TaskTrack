@@ -1,7 +1,7 @@
 use anyhow::Ok;
 use sqlx::PgPool;
 use uuid::Uuid;
-use chrono::{DateTime, Utc};
+use crate::domain::task::TaskOutput;
 
 pub struct UserRepo {
    pub pool: PgPool,
@@ -70,5 +70,17 @@ impl TaskRepo {
         Ok(rec.id)
     }
 
-
+    pub async fn list_tasks_for_user(&self, user_id: uuid::Uuid) -> anyhow::Result<Vec<TaskOutput>> {
+        let rec = sqlx::query_as::<_, TaskOutput> (
+        r#"
+            SELECT title, description, tags, status, due_date, created_at, update_at
+            FROM tasks
+            WHERE user_id = $1
+            "#,
+        )
+        .bind(user_id)
+        .fetch_all(&self.pool)
+        .await?;
+        Ok(rec)
+    }
 }
