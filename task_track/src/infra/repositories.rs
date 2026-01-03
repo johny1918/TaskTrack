@@ -1,10 +1,14 @@
 use anyhow::Ok;
 use sqlx::PgPool;
 use uuid::Uuid;
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 
 pub struct UserRepo {
-    pool: PgPool,
+   pub pool: PgPool,
+}
+
+pub struct TaskRepo {
+    pub pool: PgPool,
 }
 
 impl UserRepo {
@@ -42,5 +46,29 @@ impl UserRepo {
             Ok(None)
         }
     }
+
+}
+
+impl TaskRepo {
+    pub fn new (pool: PgPool) -> Self {
+        Self { pool }
+    }
+    pub async fn create_task(&self, title: &str, descriptions: Option<String>, status: &str)
+        -> anyhow::Result<uuid::Uuid> {
+            let rec = sqlx::query!(
+                r#"
+                INSERT INTO tasks(title, description, status)
+                VALUES($1, $2, $3)
+                RETURNING id
+                "#,
+                title,
+                descriptions,
+                status
+            )
+            .fetch_one(&self.pool)
+            .await?;
+        Ok(rec.id)
+    }
+
 
 }
