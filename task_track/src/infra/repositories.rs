@@ -83,4 +83,18 @@ impl TaskRepo {
         .await?;
         Ok(rec)
     }
+
+    pub async fn get_task_by_id(&self, id: uuid::Uuid) -> anyhow::Result<TaskOutput> {
+        let rec = sqlx::query_as!::<_, TaskOutput> (
+            r#"
+            SELECT title, description, tags, status, due_date, created_at, update_at
+            FROM tasks
+            WHERE user_id = $1
+            "#,
+        ).bind(id)
+        .fetch_optional(&self.pool)
+        .await?;
+        
+        Ok(rec)
+    }
 }
