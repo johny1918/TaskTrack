@@ -1,4 +1,5 @@
 use anyhow::Ok;
+use axum::Json;
 use sqlx::PgPool;
 use uuid::Uuid;
 use crate::domain::task::TaskOutput;
@@ -84,8 +85,8 @@ impl TaskRepo {
         Ok(rec)
     }
 
-    pub async fn get_task_by_id(&self, id: uuid::Uuid) -> anyhow::Result<TaskOutput> {
-        let rec = sqlx::query_as!::<_, TaskOutput> (
+    pub async fn get_task_by_id(&self, id: uuid::Uuid) -> anyhow::Result<Option<TaskOutput>> {
+        let rec = sqlx::query_as::<_, TaskOutput> (
             r#"
             SELECT title, description, tags, status, due_date, created_at, update_at
             FROM tasks
@@ -94,7 +95,18 @@ impl TaskRepo {
         ).bind(id)
         .fetch_optional(&self.pool)
         .await?;
-        
+
         Ok(rec)
+    }
+
+    pub async fn delete_task(&self, id: uuid::Uuid) -> anyhow::Result<bool> {
+        let result = sqlx::query!(
+            r#"DELETE FROM tasks WHERE id=$1"#,
+            id
+        )
+        .execute(&self.pool)
+        .await?;
+
+        Ok(result.rows_affected() > 0)
     }
 }
