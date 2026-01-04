@@ -1,9 +1,8 @@
 use anyhow::Ok;
 use argon2::{Argon2, PasswordHash, PasswordVerifier, password_hash::{PasswordHasher, SaltString, rand_core::OsRng}};
 use chrono::{Duration, Utc};
-use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, encode};
+use jsonwebtoken::{DecodingKey, EncodingKey, Header, TokenData, Validation, encode, decode};
 use serde::{Serialize, Deserialize};
-use jsonwebtoken::jws::decode;
 
 
 
@@ -55,6 +54,13 @@ impl AuthService {
                  &EncodingKey::from_secret(self.jwt_secret.as_bytes()))?;
 
         Ok(token)
+    }
+
+    pub fn decode_jwt(&self, token: &str) -> anyhow::Result<TokenData<Claims>> {
+        let data = decode::<Claims>(token,
+             &DecodingKey::from_secret(self.jwt_secret.as_bytes()),
+            &Validation::default())?;
+            Ok(data)
     }
    
 }
