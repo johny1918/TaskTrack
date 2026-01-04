@@ -85,24 +85,24 @@ impl TaskRepo {
         Ok(rec)
     }
 
-    pub async fn get_task_by_id(&self, id: uuid::Uuid) -> anyhow::Result<Option<TaskOutput>> {
+    pub async fn get_task_by_id(&self, user_id: uuid::Uuid) -> anyhow::Result<Option<TaskOutput>> {
         let rec = sqlx::query_as::<_, TaskOutput> (
             r#"
             SELECT title, description, tags, status, due_date, created_at, update_at
             FROM tasks
             WHERE user_id = $1
             "#,
-        ).bind(id)
+        ).bind(user_id)
         .fetch_optional(&self.pool)
         .await?;
 
         Ok(rec)
     }
 
-    pub async fn delete_task(&self, id: uuid::Uuid) -> anyhow::Result<bool> {
+    pub async fn delete_task(&self, user_id: uuid::Uuid) -> anyhow::Result<bool> {
         let result = sqlx::query!(
-            r#"DELETE FROM tasks WHERE id=$1"#,
-            id
+            r#"DELETE FROM tasks WHERE user_id=$1"#,
+            user_id
         )
         .execute(&self.pool)
         .await?;

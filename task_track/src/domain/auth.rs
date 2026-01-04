@@ -1,7 +1,9 @@
 use anyhow::Ok;
 use argon2::{Argon2, PasswordHash, PasswordVerifier, password_hash::{PasswordHasher, SaltString, rand_core::OsRng}};
+use chrono::{Duration, Utc};
+use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, encode};
 use serde::{Serialize, Deserialize};
-
+use jsonwebtoken::jws::decode;
 
 
 
@@ -36,6 +38,23 @@ impl AuthService {
         let parsed_hash = PasswordHash::new(hash)
                 .map_err(|e| anyhow::anyhow!("Failed to parse hashed password {}", e))?;
         Ok(Ok(Argon2::default().verify_password(password.as_bytes(), &parsed_hash)).is_ok())
+    }
+
+    pub fn create_jwt(&self, user_id: uuid::Uuid) -> anyhow::Result<String> {
+        let now = Utc::now();
+        let exp =  (now + Duration::seconds(self.jwt_exp_seconds)).timestamp() as usize;
+        let iat = now.timestamp() as usize;
+        let claims = Claims {
+            sub: user_id.to_string(),
+            exp,
+            iat
+        };
+
+        let token = encode(&Header::default(),
+                 &claims, 
+                 &EncodingKey::from_secret(self.jwt_secret.as_bytes()))?;
+
+        Ok(token)
     }
    
 }
